@@ -1,0 +1,99 @@
+import random 
+def print_board(board):
+    for row in board:
+        print(" | ".join(row))
+        print("-" * 5)
+
+def is_full(board):
+    for row in board:
+        for cell in row:
+            if cell == " ":
+                return False
+    return True
+
+def check_winner(board):
+    for row in board:
+        if row[0] == row[1] == row[2] != " ":
+            return True
+    for col in range(3):
+        if board[0][col] == board[1][col] == board[2][col] != " ":
+            return True
+    if board[0][0] == board[1][1] == board[2][2] != " ":
+        return True
+    if board[0][2] == board[1][1] == board[2][0] != " ":
+        return True
+    return False
+
+# Q-learning setup
+Q_table = {}
+
+def train():
+    episodes = 1000
+    for _ in range(episodes):
+        board = [[" " for _ in range(3)] for _ in range(3)]
+        done = False
+        while not done:
+            available_moves = [(r, c) for r in range(3) for c in range(3) if board[r][c] == " "]
+            if available_moves:
+                move = random.choice(available_moves)
+                # Update the Q-table (تحديث قِيَم Q هنا حسب الحاجة)
+                # في هذا المثال، نستخدم قيمة عشوائية لتدريب الذكاء الاصطناعي
+                state = str(board)
+                if state not in Q_table:
+                    Q_table[state] = {move: random.random() for move in available_moves}
+                
+                # محاكاة الحركة: تحديث اللعبة بعد الحركة
+                board[move[0]][move[1]] = "O"
+                if check_winner(board):
+                    done = True
+                if is_full(board):
+                    done = True
+
+def ai_move(board):
+    available_moves = [(r, c) for r in range(3) for c in range(3) if board[r][c] == " "]
+    state = str(board)
+    if state in Q_table:
+        move = max(Q_table[state], key=Q_table[state].get)  # اختر الحركة التي تحمل أعلى قيمة Q
+    else:
+        move = random.choice(available_moves)  # إذا لم توجد قيم Q، اختر عشوائيًا
+    board[move[0]][move[1]] = "O"
+
+# اللعبة نفسها
+def player_move(board):
+    while True:
+        try:
+            move = int(input("Enter a position (1-9): ")) - 1
+            if board[move // 3][move % 3] == " ":
+                board[move // 3][move % 3] = "X"
+                break
+            else:
+                print("Cell already taken, try again.")
+        except (ValueError, IndexError):
+            print("Invalid input, please try again.")
+
+def game():
+    print("Welcome to Tic Tac Toe!")
+    train()  # تدريب الذكاء الاصطناعي
+    board = [[" " for _ in range(3)] for _ in range(3)]
+    print_board(board)
+    
+    while True:
+        player_move(board)  # حركة اللاعب
+        print_board(board)
+        if check_winner(board):
+            print("You win!")
+            break
+        if is_full(board):
+            print("It's a draw!")
+            break
+        
+        ai_move(board)
+        print_board(board)
+        if check_winner(board):
+            print("AI wins!")
+            break
+        if is_full(board):
+            print("It's a draw!")
+            break
+
+game()
